@@ -3,7 +3,16 @@ FROM ubuntu:22.04
 
 # update the package manager and install the dependencies
 RUN yes | apt-get update
-RUN yes | apt install git python3 default-jdk default-jre openssh-server curl ca-certificates
+RUN yes | apt install \
+            git \ 
+            python3 \
+            default-jdk \
+            default-jre \
+            openssh-server \
+            curl \
+            ca-certificates \
+            gnupg \
+            software-properties-common
 
 # install docker keyrings
 RUN yes | install -m 0755 -d /etc/apt/keyrings
@@ -17,8 +26,19 @@ RUN echo \
     tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 RUN yes | apt-get update
+
 # installing the docker 
 RUN yes | apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# installing terraform 
+RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
+            gpg --dearmor | \
+            tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+
+RUN echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+        https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+        tee /etc/apt/sources.list.d/hashicorp.list
+RUN apt update && apt-get install terraform
 
 
 RUN mkdir -p /var/run/sshd
